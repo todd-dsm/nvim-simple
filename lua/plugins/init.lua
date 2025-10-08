@@ -113,6 +113,19 @@ require("lazy").setup({
 		event = "VeryLazy",
 	},
 
+	-- Auto-pairs: automatically insert closing characters
+	{
+		"windwp/nvim-autopairs",
+		event = "InsertEnter",
+		opts = {
+			check_ts = true, -- Use treesitter for smarter pairing
+			ts_config = {
+				lua = { "string" }, -- Don't add pairs in lua string treesitter nodes
+				bash = { "string" }, -- Don't add pairs in bash string treesitter nodes
+			},
+		},
+	},
+
 	-- Treesitter: better syntax highlighting
 	{
 		"nvim-treesitter/nvim-treesitter",

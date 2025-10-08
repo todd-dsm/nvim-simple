@@ -7,6 +7,11 @@ local t = ls.text_node
 local i = ls.insert_node
 
 return {
+	-- shebang (type 'bash' at 1:1 and press Tab)
+	s("bash", {
+		t("#!/usr/bin/env bash"),
+	}),
+
 	-- if statement with [[ ]] syntax
 	s("if", {
 		t("if [[ "),
