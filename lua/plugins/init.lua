@@ -128,11 +128,44 @@ require("lazy").setup({
 		end,
 	},
 
-	-- None-ls: shellcheck and shfmt integration
+	-- Formatting: conform.nvim (shfmt)
 	{
-		"nvimtools/none-ls.nvim",
+		"stevearc/conform.nvim",
+		event = { "BufWritePre" },
+		cmd = { "ConformInfo" },
+		opts = {
+			formatters_by_ft = {
+				sh = { "shfmt" },
+				bash = { "shfmt" },
+			},
+			format_on_save = {
+				timeout_ms = 500,
+				lsp_fallback = true,
+			},
+			formatters = {
+				shfmt = {
+					prepend_args = { "-i", "4", "-bn", "-ci", "-sr" },
+				},
+			},
+		},
+	},
+
+	-- Linting: nvim-lint (shellcheck)
+	{
+		"mfussenegger/nvim-lint",
 		event = { "BufReadPre", "BufNewFile" },
-		dependencies = { "nvim-lua/plenary.nvim" },
+		config = function()
+			require("lint").linters_by_ft = {
+				sh = { "shellcheck" },
+				bash = { "shellcheck" },
+			}
+			-- Lint on save
+			vim.api.nvim_create_autocmd({ "BufWritePost" }, {
+				callback = function()
+					require("lint").try_lint()
+				end,
+			})
+		end,
 	},
 
 	-- Completion: nvim-cmp

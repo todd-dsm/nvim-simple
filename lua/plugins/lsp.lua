@@ -1,14 +1,11 @@
 -- LSP configuration
 -- Native LSP + bash-language-server + none-ls for shellcheck/shfmt
 
-local lspconfig_status, lspconfig = pcall(require, "lspconfig")
-if not lspconfig_status then
-	return
-end
-
+-- Enhanced capabilities with nvim-cmp
 local cmp_nvim_lsp_status, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
-if not cmp_nvim_lsp_status then
-	return
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+if cmp_nvim_lsp_status then
+	capabilities = cmp_nvim_lsp.default_capabilities()
 end
 
 -- LSP keybindings (attached to buffers with LSP)
@@ -55,45 +52,52 @@ local on_attach = function(client, bufnr)
 		vim.tbl_extend("force", opts, { desc = "Show diagnostic" })
 	)
 
-	-- Format on save (for LSP servers that support formatting)
-	if client.supports_method("textDocument/formatting") then
-		vim.api.nvim_create_autocmd("BufWritePre", {
-			buffer = bufnr,
-			callback = function()
-				vim.lsp.buf.format({ bufnr = bufnr })
-			end,
+	-- Note: Format on save is now handled by conform.nvim
+	-- Linting is handled by nvim-lint (both configured in lua/plugins/init.lua)
+end
+
+-- Set up LspAttach autocmd to apply keybindings when LSP attaches
+vim.api.nvim_create_autocmd("LspAttach", {
+	callback = function(args)
+		local client = vim.lsp.get_client_by_id(args.data.client_id)
+		if client then
+			on_attach(client, args.buf)
+		end
+	end,
+})
+
+-- Bash Language Server setup
+-- Use new vim.lsp.config API if available (Neovim 0.11+), fallback to lspconfig
+if vim.lsp.config then
+	-- Neovim 0.11+ native configuration
+	vim.lsp.config.bashls = {
+		cmd = { "bash-language-server", "start" },
+		filetypes = { "sh", "bash" },
+		root_markers = { ".git" },
+		capabilities = capabilities,
+	}
+	vim.api.nvim_create_autocmd("FileType", {
+		pattern = { "sh", "bash" },
+		callback = function(args)
+			vim.lsp.enable("bashls", args.buf)
+		end,
+	})
+else
+	-- Fallback to lspconfig for older Neovim versions
+	local lspconfig_status, lspconfig = pcall(require, "lspconfig")
+	if lspconfig_status then
+		lspconfig.bashls.setup({
+			on_attach = on_attach,
+			capabilities = capabilities,
+			filetypes = { "sh", "bash" },
 		})
 	end
 end
 
--- Enhanced capabilities with nvim-cmp
-local capabilities = cmp_nvim_lsp.default_capabilities()
-
--- Bash Language Server setup
-lspconfig.bashls.setup({
-	on_attach = on_attach,
-	capabilities = capabilities,
-	filetypes = { "sh", "bash" },
-})
-
--- none-ls setup for shellcheck and shfmt
-local null_ls_status, null_ls = pcall(require, "null-ls")
-if null_ls_status then
-	null_ls.setup({
-		sources = {
-			-- Shellcheck: Linting
-			null_ls.builtins.diagnostics.shellcheck.with({
-				-- Only lint on save (not on text changed)
-				method = null_ls.methods.DIAGNOSTICS_ON_SAVE,
-			}),
-			-- Shfmt: Formatting
-			null_ls.builtins.formatting.shfmt.with({
-				extra_args = { "-i", "4", "-bn", "-ci", "-sr" }, -- 4 spaces, binary ops on next line, switch cases indent, redirect follows command
-			}),
-		},
-		on_attach = on_attach,
-	})
-end
+-- Formatting and linting are now handled by:
+-- - conform.nvim for formatting (shfmt)
+-- - nvim-lint for linting (shellcheck)
+-- See lua/plugins/init.lua for configuration
 
 -- Diagnostic configuration
 vim.diagnostic.config({
