@@ -51,9 +51,9 @@ require("lazy").setup({
 						vim.api.nvim_set_hl(0, "Normal", { ctermfg = 244, ctermbg = "NONE" })
 						vim.api.nvim_set_hl(0, "SignColumn", { ctermfg = 240, ctermbg = "NONE" })
 						vim.api.nvim_set_hl(0, "LineNr", { ctermfg = 240, ctermbg = "NONE" })
-						-- CursorLine: use base02 (235) to match iTerm2
-						vim.api.nvim_set_hl(0, "CursorLine", { ctermbg = 235 })
-						vim.api.nvim_set_hl(0, "CursorLineNr", { ctermfg = 245, ctermbg = 235 })
+						-- CursorLine: subtle gray slightly lighter than background
+						vim.api.nvim_set_hl(0, "CursorLine", { ctermbg = 236 })
+						vim.api.nvim_set_hl(0, "CursorLineNr", { ctermfg = 245, ctermbg = 236 })
 						-- Fix Treesitter parameter highlighting (no background)
 						vim.api.nvim_set_hl(0, "@variable.parameter", { ctermfg = 33, ctermbg = "NONE" })
 						vim.api.nvim_set_hl(0, "@variable.parameter.bash", { link = "@variable.parameter" })
