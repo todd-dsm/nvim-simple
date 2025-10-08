@@ -1,0 +1,18 @@
+# .gitignore
+
+# nvim plugin directories (vim-plug)
+
+# Claude Files
+CLAUDE.md
+.claude/
+zissues/
+
+# TEST File
+yo.sh
+
+# OS generated files
+.DS_Store
+.netrwhist
+*.swp
+*.swo
+
