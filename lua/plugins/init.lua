@@ -17,39 +17,63 @@ vim.opt.rtp:prepend(lazypath)
 
 -- Plugin specifications
 require("lazy").setup({
-	-- Colorscheme: Solarized
+	-- Colorscheme: Solarized (classic, proven 256-color support)
 	{
-		"maxmx03/solarized.nvim",
+		"ishan9299/nvim-solarized-lua",
 		lazy = false,
 		priority = 1000,
 		config = function()
-			local ok, solarized = pcall(require, "solarized")
-			if ok then
-				solarized.setup({
-					theme = "default", -- Use default theme
-					transparent = {
-						enabled = false, -- Disable transparency for better 256-color support
-						pmenu = false,
-						normal = false,
-						normalfloat = false,
-						neotree = false,
-						nvimtree = false,
-						whichkey = false,
-						telescope = false,
-						lazy = false,
-					},
-					on_highlights = nil,
-					on_colors = nil,
-					palette = "solarized", -- Use official solarized palette
-					variant = "winter", -- Use winter variant for better contrast
-					error_lens = {
-						text = false,
-						symbol = false,
-					},
-				})
-			end
 			vim.o.background = "dark"
+			-- Set Solarized options before loading
+			vim.g.solarized_italic_comments = true
+			vim.g.solarized_italic_keywords = false
+			vim.g.solarized_italic_functions = false
+			vim.g.solarized_italic_variables = false
+			vim.g.solarized_contrast = true
+			vim.g.solarized_borders = false
+			vim.g.solarized_disable_background = false
+
 			vim.cmd.colorscheme("solarized")
+
+			-- Fix sign column and line number background to match body
+			vim.api.nvim_create_autocmd("ColorScheme", {
+				pattern = "solarized",
+				callback = function()
+					if vim.opt.termguicolors:get() then
+						-- iTerm2: true colors - make SignColumn match Normal background
+						local normal_bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg
+						local lineNr_fg = vim.api.nvim_get_hl(0, { name = "LineNr" }).fg
+						local cursorline_bg = vim.api.nvim_get_hl(0, { name = "CursorLine" }).bg
+						vim.api.nvim_set_hl(0, "SignColumn", { fg = lineNr_fg, bg = normal_bg })
+						vim.api.nvim_set_hl(0, "LineNr", { fg = lineNr_fg, bg = normal_bg })
+					else
+						-- Terminal.app: 256-color - match iTerm2's cursor line color
+						vim.api.nvim_set_hl(0, "Normal", { ctermfg = 244, ctermbg = "NONE" })
+						vim.api.nvim_set_hl(0, "SignColumn", { ctermfg = 240, ctermbg = "NONE" })
+						vim.api.nvim_set_hl(0, "LineNr", { ctermfg = 240, ctermbg = "NONE" })
+						-- CursorLine: use base02 (235) to match iTerm2
+						vim.api.nvim_set_hl(0, "CursorLine", { ctermbg = 235 })
+						vim.api.nvim_set_hl(0, "CursorLineNr", { ctermfg = 245, ctermbg = 235 })
+						-- Fix Treesitter parameter highlighting (no background)
+						vim.api.nvim_set_hl(0, "@variable.parameter", { ctermfg = 33, ctermbg = "NONE" })
+						vim.api.nvim_set_hl(0, "@variable.parameter.bash", { link = "@variable.parameter" })
+					end
+
+					-- Fix git signs colors
+					vim.api.nvim_set_hl(0, "GitSignsAdd", { link = "DiffAdd" })
+					vim.api.nvim_set_hl(0, "GitSignsChange", { link = "DiffChange" })
+					vim.api.nvim_set_hl(0, "GitSignsDelete", { link = "DiffDelete" })
+
+					-- Disable spell highlighting completely
+					vim.api.nvim_set_hl(0, "SpellBad", {})
+					vim.api.nvim_set_hl(0, "SpellCap", {})
+					vim.api.nvim_set_hl(0, "SpellRare", {})
+					vim.api.nvim_set_hl(0, "SpellLocal", {})
+				end,
+			})
+
+			-- Trigger the autocmd now
+			vim.cmd("doautocmd ColorScheme solarized")
 		end,
 	},
 

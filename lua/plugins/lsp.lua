@@ -10,6 +10,11 @@ end
 
 -- LSP keybindings (attached to buffers with LSP)
 local on_attach = function(client, bufnr)
+	-- Disable semantic tokens (can cause odd highlighting in 256-color terminals)
+	if client.server_capabilities then
+		client.server_capabilities.semanticTokensProvider = nil
+	end
+
 	local opts = { noremap = true, silent = true, buffer = bufnr }
 
 	-- LSP navigation and actions

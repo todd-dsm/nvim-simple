@@ -44,6 +44,12 @@ opt.fileencoding = "utf-8"
 opt.ruler = true             -- Show cursor position
 opt.cursorline = true        -- Highlight current line
 
+-- Cursor shape: keep block cursor in all modes (normal, insert, replace)
+opt.guicursor = "n-v-c-sm:block,i-ci-ve:block,r-cr-o:block"
+
+-- Disable spell checking (not useful for code)
+opt.spell = false
+
 -- Always show status line
 opt.laststatus = 2
 
